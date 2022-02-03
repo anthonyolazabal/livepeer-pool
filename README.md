@@ -4,32 +4,35 @@ This page describe the proposal for pool implementation in Livepeer protocol.
 
 ## Big picture
 
-![Services diagram](https://github.com/anthonyolazabal/livepeer-pool/blob/main/Pool%20Services.png)
+![Services diagram](https://github.com/anthonyolazabal/livepeer-pool/blob/main/Pool%20Flow.png)
 
 ## API
 
 All writable endpoints require a HMAC authentication.
-All readable endpoints will be accessible without authentication.
+All readable endpoints will be accessible without authentication and return JSON data.
 Self-signe certificated, with the DNS Name of the API. Generated a new each time the API start.
 
 ### Available endpoints:
 
 `/recordTranscoderJob` save a transcoder job in DB (sent by an orchestrator). Parameter should be named `jobDetails`.
 
-`/getTranscodersJobs` returns the transcoders jobs for the last 24h.
+`/recordWinningTicket` save information regarding a winning ticket in DB (sent by an orchestrator). Parameter should be named `winningTicket`.
 
-`/getTranscoderJobs` returns jobs for a transcoder for the last 24h. Parameter should be named `transcoderAddress`.
+`/getTranscodersJobs` returns the all transcoders jobs for the last 24h.
+
+`/getTranscoderJobs` returns jobs for a transcoder for the last 24h. Parameter should be named `transcoderAddress` (ETH address).
 
 `/getRewards` returns all rewards for the last 30d.
 
+`/getTranscoderRewards` returns all rewards for a transcoder. Parameter should be named `transcoderAddress` (ETH address).
+
 `/getTranscoderRewards` returns rewards for a transcoder. Parameter should be named `transcoderAddress`.
-
-`/getPoolStatistics` returns pool statistics (Jobs, Payments, Transcoders, Winning Tickets, optionnally but nice to have Orchestrator informations).
-
 
 ## Tables
 * [transcoderJobs](#transcoderJobs)
 * [rewardsPayments](#rewardsPayments)
+* [winningTickets](#winningTickets)
+* [logs](#logs)
 
 ### Table `transcoderJobs`
 
@@ -58,6 +61,29 @@ value | DECIMAL | Amuont of reward.
 gasFees | DECIMAL | Amuont of gas fees.
 paymentStatus | STRING | Status of the payment (On hold/Paid).
 txHash | STRING | Transaction hash of the winning ticket redemption on-chain.
+
+### Table `winningTickets`
+
+Tracks orchestrator winning tickets.
+
+Column | Type | Description
+---|---|---
+createdAt | DATETIME DEFAULT CURRENT_TIMESTAMP | Time this row was inserted. 
+wonAt | DATETIME DEFAULT CURRENT_TIMESTAMP | Date of the won ticket. 
+value | DECIMAL | Amuont of reward (Should alwards be 0.18 ETH but might change if additional chains or tokens are added).
+gasFees | DECIMAL | Amuont of gas fees (Optional).
+paymentStatus | STRING | Status of the payment (Not claimed/Claimed).
+txHash | STRING | Transaction hash of the winning ticket redemption on-chain (Optional).
+
+### Table `logs`
+
+Logs table to track pool process activities.
+
+Column | Type | Description
+---|---|---
+createdAt | DATETIME DEFAULT CURRENT_TIMESTAMP | Time this row was inserted. 
+key | STRING | Log identifier.
+value | STRING | Log value.
 
 ## Rewards calculation
 Reward calculation routine will be triggered once per round. If during the previous round a winning ticket was won, the split will be calculated.
@@ -94,5 +120,7 @@ In a future release we can also define the transcoding options based on the perf
 
 ## Livepeer program update needed 
 In order to collect jobs information, we need to update the Livepeer program to achieve the following : 
+
 - On the transcoder side, be able to start specifying a ETH address for payment (may already existe with the flag `-ethAcctAddr` but need to be verified). Benchmark client on each startup to define the maximum of sessions based on the results of the benchmark.
-- On the orchestrator side, handle the ETH address sent by the transoder along with informations regarding the job and send it to the pool API. Jobs informations should include the informations described in the `transcoderJobs` table (except for the weight, createdAt). Add a flag `-poolAPI` to specify the endpoint that receive the jobs informations.
+
+- On the orchestrator side, handle the ETH address sent by the transoder along with informations regarding the job and send it to the pool API. Jobs informations should include the informations described in the `transcoderJobs` table (except for the weight, createdAt). Add a flag `-poolAPI` to specify the endpoint that receive the jobs informations. If flag `-poolAPI` is set, orchestrator sent the relevant informations on the following events : transcoder jobs validated, winning ticket, rewards claimed.
