@@ -81,7 +81,17 @@ This will give us the percentage of the reward to distribute for each transcoder
 ## Payment threshold 
 Payments for transcoders will only be released when the total of payments come to a certain amount to avoid paying big gas fees for small amuonts.
 
+## Performances of transcoder
+One of the major concerns in having a public pool is the performances of the transcoders since it can make the orchestrator excluded of broadcasters selection list. In order to limit the impact on the pool, a benchmark at earch transcoder startup should be done when starting with the flag `-ethAcctAddr`. Benchmark should measure : 
+
+- Transcoding performances (based on the existing benchmark from Livepeer)
+- Latency performances
+- Download and Upload performances
+
+Depending on the results, the maxSessions will be automatically defined to bring the best performances to the pool. 
+In a future release we can also define the transcoding options based on the performances for the different profiles.
+
 ## Livepeer program update needed 
 In order to collect jobs information, we need to update the Livepeer program to achieve the following : 
-- On the transcoder side, be able to start specifying a ETH address for payment (may already existe with the flag `-ethAcctAddr` but need to be verified)
+- On the transcoder side, be able to start specifying a ETH address for payment (may already existe with the flag `-ethAcctAddr` but need to be verified). Benchmark client on each startup to define the maximum of sessions based on the results of the benchmark.
 - On the orchestrator side, handle the ETH address sent by the transoder along with informations regarding the job and send it to the pool API. Jobs informations should include the informations described in the `transcoderJobs` table (except for the weight, createdAt).
