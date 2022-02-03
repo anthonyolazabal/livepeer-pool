@@ -54,7 +54,8 @@ Column | Type | Description
 ---|---|---
 createdAt | DATETIME DEFAULT CURRENT_TIMESTAMP | Time this row was inserted. 
 transcoder | STRING | Address (ETH) of the transcoder that did the job.
-value | DECIMAL | Number of pixels in the job.
+value | DECIMAL | Amuont of reward.
+gasFees | DECIMAL | Amuont of gas fees.
 paymentStatus | STRING | Status of the payment (On hold/Paid).
 txHash | STRING | Transaction hash of the winning ticket redemption on-chain.
 
@@ -94,4 +95,4 @@ In a future release we can also define the transcoding options based on the perf
 ## Livepeer program update needed 
 In order to collect jobs information, we need to update the Livepeer program to achieve the following : 
 - On the transcoder side, be able to start specifying a ETH address for payment (may already existe with the flag `-ethAcctAddr` but need to be verified). Benchmark client on each startup to define the maximum of sessions based on the results of the benchmark.
-- On the orchestrator side, handle the ETH address sent by the transoder along with informations regarding the job and send it to the pool API. Jobs informations should include the informations described in the `transcoderJobs` table (except for the weight, createdAt).
+- On the orchestrator side, handle the ETH address sent by the transoder along with informations regarding the job and send it to the pool API. Jobs informations should include the informations described in the `transcoderJobs` table (except for the weight, createdAt). Add a flag `-poolAPI` to specify the endpoint that receive the jobs informations.
