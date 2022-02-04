@@ -93,12 +93,12 @@ For each criteria a weight is going to be added, and the total will be saved in 
 
 Examples :
 - A job with 10s will have a weight of 10 and a job of 5s will have a weight of 5. 
-- Same for the pixels, the more pixels you transcode, the more wieght you get. 
+- Same for the pixels, the more pixels you transcode, the more weight you get. 
 - This apply to profiles too, one profile -> weight 1 and 4 profiles -> weight of 4. 
 
 Weights needs to be challenged to fairly equilibrate between the criterias.
 
-Once the weight for each job has been calculated, when can calculate the split of the reward(s) : 
+Once the weight for each job has been calculated, we can calculate the split of the reward(s) : 
 
 Share of the transcoder in the distribution = Total weights of jobs for the transcoder since last rewards calculation
  / Total weights of jobs since last rewards calculation
@@ -118,9 +118,17 @@ One of the major concerns in having a public pool is the performances of the tra
 Depending on the results, the maxSessions will be automatically defined to bring the best performances to the pool. 
 In a future release we can also define the transcoding options based on the performances for the different profiles.
 
+Total duration of transcoding has also to be taken in account, one way could be to set a limit of (for example) 800 ms for a transcoder to download, transcode and upload the result. If the trancoder is performing above this limit, it can be excluded from the pool.
+
 ## Livepeer program update needed 
-In order to collect jobs information, we need to update the Livepeer program to achieve the following : 
+In order to collect jobs information, we need to update the Livepeer program to achieve the following. 
 
-- On the transcoder side, be able to start specifying a ETH address for payment (may already existe with the flag `-ethAcctAddr` but need to be verified). Benchmark client on each startup to define the maximum of sessions based on the results of the benchmark.
+On the transcoder side : 
+- Be able to start specifying a ETH address for payment (may already existe with the flag `-ethAcctAddr` but need to be verified). 
+- Benchmark transcoding performance on each startup to define the maximum of sessions based on the results of the benchmark.
+- Send result of transcoding tests to orchestrator
 
-- On the orchestrator side, handle the ETH address sent by the transoder along with informations regarding the job and send it to the pool API. Jobs informations should include the informations described in the `transcoderJobs` table (except for the weight, createdAt). Add a flag `-poolAPI` to specify the endpoint that receive the jobs informations. If flag `-poolAPI` is set, orchestrator sent the relevant informations on the following events : transcoder jobs validated, winning ticket, rewards claimed.
+On the orchestrator side : 
+- Handle the ETH address sent by the transoder along with informations regarding the job and send it to the pool API. Jobs informations should include the informations described in the `transcoderJobs` table (except for the weight, createdAt). 
+- Add a flag `-poolAPI` to specify the endpoint that receive the jobs informations. If flag `-poolAPI` is set, orchestrator sent the relevant informations on the following events : transcoder jobs validated, winning ticket, rewards claimed.
+- Be able to exclude a transcoder if it is performing under the limit (the exclusion take place on the transcoder registration when it sends the result of the benchmark)
